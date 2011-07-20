@@ -1,4 +1,6 @@
 source "http://rubygems.org"
 
-# Specify your gem's dependencies in backbone_ext.gemspec
+gem 'rake'
+
+# Specify your gem's dependencies in jcr-mmhmm.gemspec
 gemspec
