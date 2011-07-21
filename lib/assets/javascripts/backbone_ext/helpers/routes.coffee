@@ -4,10 +4,9 @@ BackboneExt.Helpers.Routes.Model =
   url: (options) ->
     options ||= {}
     options.format = 'json' unless options.format?
-    options.object ||= {}
     if not this.isNew()
       if @routes.show?
-        options.object.id = @id
+        options.id = @id
         if _.isFunction(@routes.show) then @routes.show(this, options) else @routes.show
       else
         null
@@ -21,7 +20,6 @@ BackboneExt.Helpers.Routes.Model =
     options ||= {}
     options.format = 'json' unless options.format?
     options[@railsName] ||= this.toBackboneJSON()
-    options.object ||= {}
     if @routes.new?
       if _.isFunction(@routes.new) then @routes.new(this, options) else @routes.new
     else
@@ -33,7 +31,6 @@ BackboneExt.Helpers.Routes.Collection =
   url: (options) ->
     options ||= {}
     options.format = 'json' unless options.format?
-    options.object ||= {}
     if @routes.index?
       if _.isFunction(@routes.index)
         if @routes.belongsTo?
@@ -41,8 +38,8 @@ BackboneExt.Helpers.Routes.Collection =
             idMethod = "#{name}_id"
             hash[idMethod] = this[idMethod]
             hash
-          routeObjectOptions = _.inject(@routes.belongsTo, iterator, {}, this)
-          options.object = _.extend(routeObjectOptions, (options.object || {}))
+          routeOptions = _.inject(@routes.belongsTo, iterator, {}, this)
+          options = _.extend(routeOptions, (options || {}))
         scopeOptions = {}
         scopeOptions.where ||= @where if @where?
         scopeOptions.limit ||= @limit if @limit?

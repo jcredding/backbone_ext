@@ -3,7 +3,7 @@ BackboneExt.Utilities.DataParser =
     dataScripts = $('SCRIPT[data-name][type="application/json"]')
     _.each dataScripts, (dataScript) =>
       dataScript = $(dataScript)
-      @object = {} if !object?
+      @object = {} if !@object?
       if dataScript.attr('data-merge')
         @object = $.extend(true, @object, $.parseJSON(dataScript.html()))
       else

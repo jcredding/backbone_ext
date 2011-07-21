@@ -72,7 +72,7 @@ BackboneExt.Model = Backbone.Model.extend
     requestURL = if _.isFunction(model[urlMethod]) then model[urlMethod]() else model[urlMethod]
     if requestURL?
       params =
-        url:          requestUrl
+        url:          requestURL
         type:         type
         contentType:  'application/json'
         data:         modelJSON

@@ -5,7 +5,7 @@ class BackboneExt.App
   config:
     dataParser: BackboneExt.Utilities.DataParser
     routeParser: BackboneExt.Utilities.RouteParser
-    routersNamespace: App.Routers
+    routersNamespace: window.App.Routers
 
   constructor: (config) ->
     _.bindAll(this, "setup", "start", "navigateTo", "navigate")

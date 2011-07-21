@@ -102,7 +102,7 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
       dataScripts = $('SCRIPT[data-name][type="application/json"]');
       _.each(dataScripts, __bind(function(dataScript) {
         dataScript = $(dataScript);
-        if (!(typeof object !== "undefined" && object !== null)) {
+        if (!(this.object != null)) {
           this.object = {};
         }
         if (dataScript.attr('data-merge')) {
@@ -295,6 +295,11 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
       _.each(methods, __bind(function(method) {
         return _.bindAll(this, method);
       }, this));
+      _.each(this.routes, __bind(function(method, path) {
+        if (!path.match(/\?\*params$/)) {
+          return this.route("" + path + "?*params", method, this[method]);
+        }
+      }, this));
       this.app = options.app;
       if (this.setup != null) {
         return this.setup();
@@ -311,6 +316,20 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
     },
     navigateTo: function(path) {
       return this.app.navigateTo(path);
+    },
+    _parseParams: function(params) {
+      var iterator;
+      if (params) {
+        iterator = function(object, keyvalue) {
+          var parts;
+          parts = keyvalue.split("=");
+          object[parts[0]] = parts[1];
+          return object;
+        };
+        return _.inject(params.split("&"), iterator, {}, this);
+      } else {
+        return [];
+      }
     }
   });
 }).call(this);
@@ -403,7 +422,7 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
       requestURL = _.isFunction(model[urlMethod]) ? model[urlMethod]() : model[urlMethod];
       if (requestURL != null) {
         params = {
-          url: requestUrl,
+          url: requestURL,
           type: type,
           contentType: 'application/json',
           data: modelJSON,
@@ -775,10 +794,9 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
       if (options.format == null) {
         options.format = 'json';
       }
-      options.object || (options.object = {});
       if (!this.isNew()) {
         if (this.routes.show != null) {
-          options.object.id = this.id;
+          options.id = this.id;
           if (_.isFunction(this.routes.show)) {
             return this.routes.show(this, options);
           } else {
@@ -806,7 +824,6 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
         options.format = 'json';
       }
       options[_name = this.railsName] || (options[_name] = this.toBackboneJSON());
-      options.object || (options.object = {});
       if (this.routes["new"] != null) {
         if (_.isFunction(this.routes["new"])) {
           return this.routes["new"](this, options);
@@ -821,12 +838,11 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
   _.extend(BackboneExt.Model.prototype, BackboneExt.Helpers.Routes.Model);
   BackboneExt.Helpers.Routes.Collection = {
     url: function(options) {
-      var iterator, routeObjectOptions, scopeOptions, urlOptions;
+      var iterator, routeOptions, scopeOptions, urlOptions;
       options || (options = {});
       if (options.format == null) {
         options.format = 'json';
       }
-      options.object || (options.object = {});
       if (this.routes.index != null) {
         if (_.isFunction(this.routes.index)) {
           if (this.routes.belongsTo != null) {
@@ -836,8 +852,8 @@ a);o.prototype=a.prototype;d.prototype=new o;b&&f.extend(d.prototype,b);c&&f.ext
               hash[idMethod] = this[idMethod];
               return hash;
             };
-            routeObjectOptions = _.inject(this.routes.belongsTo, iterator, {}, this);
-            options.object = _.extend(routeObjectOptions, options.object || {});
+            routeOptions = _.inject(this.routes.belongsTo, iterator, {}, this);
+            options = _.extend(routeOptions, options || {});
           }
           scopeOptions = {};
           if (this.where != null) {
