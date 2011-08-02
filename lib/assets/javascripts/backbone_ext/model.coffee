@@ -19,6 +19,7 @@ onSaveError = (onError, model, options) ->
   (response) ->
     if (response.status == 422) and response.responseText? and not _.isEmpty(response.responseText)
       model.errors = JSON.parse(response.responseText)
+      model.trigger("set:errors", model, model.errors)
     if onError?
       onError(model, response)
     else
@@ -52,16 +53,15 @@ BackboneExt.Model = Backbone.Model.extend
 
   save: (attrs, options) ->
     options ||= {}
-    if attrs? and this.set(attrs, options)
-      model = this
-      method = if this.isNew() then 'create' else 'update'
-      syncOptions =
-        success: onSaveSuccess(options.success, model, options)
-        error: onSaveError(options.error, model, options)
-      (this.sync || Backbone.sync)(method, this, syncOptions)
-      this
-    else
-      false
+    if attrs?
+      this.set(attrs, options)
+    model = this
+    method = if this.isNew() then 'create' else 'update'
+    syncOptions =
+      success: onSaveSuccess(options.success, model, options)
+      error: onSaveError(options.error, model, options)
+    (this.sync || Backbone.sync)(method, this, syncOptions)
+    this
 
   sync: (method, model, options) ->
     type = methodMap[method]

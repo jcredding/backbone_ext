@@ -1,7 +1,6 @@
 defineAssociation = (object, type, name, options) ->
   object._buildAssociations();
   object.associations.store(type, name, options)
-  object[name] = null
   object
 
 BackboneExt.Helpers ||= {}
@@ -17,11 +16,15 @@ BackboneExt.Helpers.Associations =
     defineAssociation(this, "hasOne", name, options)
 
   toJSON: ->
-    iterator = (attrs, options, name) ->
+    iterator = (attrs, association, name) ->
+
       if this[name]?
-        associationJSON = {}
-        assocAttrs = BackboneExt.Utilities.unwrapAttributes(this[name], this[name].toJSON());
-        attrs[name] = assocAttrs
+        associationToJSON = (model) ->
+          BackboneExt.Utilities.unwrapAttributes(model, model.toJSON())
+        attrs[name] = if association.type != "HasMany"
+          associationToJSON(this[name])
+        else
+          _.map(this[name].models, associationToJSON)
         attrs
       else
         attrs

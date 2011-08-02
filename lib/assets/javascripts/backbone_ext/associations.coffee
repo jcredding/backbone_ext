@@ -38,4 +38,16 @@ class BackboneExt.Associations
     @allLoaded = (@loaded.length == _.values(@config).length)
     @model.trigger("associations:loaded", @model) if @allLoaded
 
+  whenLoaded: (names..., options) ->
+    options ||= {}
+    throw("A callback options must be provided.") if !options.callback?
+    options.load = true if !options.load?
+    _.each names, (name) =>
+      if _.include @loaded, name
+        options.callback(@config[name].model)
+      else
+        @model.bind("association:#{name}:loaded", options.callback)
+        @model.associations.load(name) if options.load
+    this
+
 _.extend BackboneExt.Associations.prototype, Backbone.Events

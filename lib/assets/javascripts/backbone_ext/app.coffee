@@ -28,10 +28,12 @@ class BackboneExt.App
 
   start: ->
     if !@delayStart || @routes
+      @manager = new BackboneExt.Manager()
       @routers = {}
       _.each _.keys(@config.routersNamespace), (routerName) =>
         options =
           app: this
+          manager: @manager
         @routers[routerName] = new @config.routersNamespace[routerName](options)
       @setup()
       @hasRouters = !_.isEmpty(@routers);
@@ -51,12 +53,11 @@ class BackboneExt.App
 
   navigateTo: (path) ->
     path = cleanPath(path)
-    if @hasHistory
-      @navigate(path)
-      path = Backbone.history.getFragment()
-      @navigate(path, true)
-    else
-      @navigate(path, true)
+    @navigate(path, true)
+    
+  currentlyAt: (path) ->
+    path = cleanPath(path)
+    @navigate(path)
 
   navigate: (path, trigger) ->
     path = cleanPath(path)

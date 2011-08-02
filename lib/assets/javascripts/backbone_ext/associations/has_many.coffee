@@ -3,24 +3,29 @@ class BackboneExt.Associations.HasMany extends BackboneExt.Associations.Base
     @type = "HasMany"
     super(@name, @options)
 
+    @model[@name] = new @options['collection']
+
+    if @model.attributes[@name]?
+      @fromAttrs()
+
   refresh: ->
-    if (attrs = _.clone(@model.attributes[@name]))? and not _.isEmpty(attrs)
-      this._buildFromAttributes(attrs)
-    else if (id = @model.id)
-      this._fetchModel(id)
+    if @model.attributes[@name]?
+      @fromAttrs()
+    else if @model.id?
+      @fetch()
     else
-      this.afterRefresh()
+      @afterRefresh()
 
-  _fetchModel: (id) ->
-    if !@options.where
-      @options.where = {}
-      @options.where["#{@model.railsName}_id"] = id
-    args =
-      where: (if _.isFunction(@options.where) then @options.where(@model) else @options.where)
-    @model[@name] = new @options['collection']([], args)
-    @model[@name].fetch({ success: this.afterRefresh })
+  fromAttrs: ->
+    attrs = _.clone(@model.attributes[@name])
+    @model[@name].add(attrs)
+    super()
+
+  fetch: ->
+    args = @argsForCollection()
+    _.each args, (value, key) =>
+      @model[@name][key] = value
+    @model[@name].fetch
+      success: @afterRefresh
+      error: @afterFail
     this
-
-  _buildFromAttributes: (attrs) ->
-    @model[@name] = new @options['collection'](attrs)
-    super(attrs)

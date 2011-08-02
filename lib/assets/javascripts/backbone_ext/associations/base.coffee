@@ -8,27 +8,56 @@ checkOptions = (name, options, type) ->
   options.type = type
   options
 
+getValue = (object, model) ->
+  value = if _.isFunction(object)
+    object(model)
+  else
+    object
+  _.clone(value)
+
 class BackboneExt.Associations.Base
   constructor: (@name, @options) ->
-    _.bindAll(this, "load", "refresh", "afterRefresh")
+    _.bindAll(this, "load", "refresh", "afterRefresh", "afterFail")
 
     @options = checkOptions(@name, @options, @type)
 
     @loaded = false
+    @failed = false
     @model = @options.on
+
+    if @type != "belongsTo"
+      @options.key ||= "#{@model.railsName}_id"
+      if !@options.where and !@options.params
+        @options.where = {}
+        @options.where[@options.key] = @model.id
+    else
+      @options.key ||= "#{@name}_id"
 
   load: ->
     @loaded = false
-    this.refresh()
+    @refresh()
+
+  fromAttrs: ->
+    @model.unset(@name, { silent: true })
+    @afterRefresh()
+    this
 
   afterRefresh: ->
     @loaded = true
-    this.trigger("loaded", this)
+    @trigger("loaded", this)
     false
 
-  _buildFromAttributes: (attrs) ->
-    @model.unset(@name, { silent: true })
-    this.afterRefresh()
-    this
+  afterFail: (object, response) ->
+    @failed = true
+    @afterRefresh()
+    false
+
+  argsForCollection: ->
+    args = {}
+    if @options.where
+      args.where = getValue(@options.where, @model)
+    if @options.params
+      args.params = getValue(@options.params, @model)
+    args
 
 _.extend BackboneExt.Associations.Base.prototype, Backbone.Events
